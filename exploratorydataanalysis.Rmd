@@ -6,7 +6,7 @@ date: "2024-07-30"
 ---
 
 # Set-Up
-To run code set `eval = TRUE`, to not run code when knitting set `eval = FALSE`.
+To run code when knitting set `eval = TRUE`, to not run code for while knitting the PDF set `eval = FALSE`.
 ```{r echo = FALSE, message = FALSE, eval = TRUE}
 library(dplyr)
 library(ggplot2)
@@ -20,7 +20,7 @@ train <- read_csv("Data/train_class.csv")
 test <- read_csv("Data/test_class.csv")
 ```
 
-# Takeaways
+# CSV Analysis
 
 ## Summary
 The most important takeaways are:
