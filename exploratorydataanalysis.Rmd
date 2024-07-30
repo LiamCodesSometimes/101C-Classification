@@ -1,0 +1,178 @@
+---
+title: "Classification EDA"
+output:
+  pdf_document: default
+date: "2024-07-30"
+---
+
+# Set-Up
+To run code set `eval = TRUE`, to not run code when knitting set `eval = FALSE`.
+```{r echo = FALSE, message = FALSE, eval = TRUE}
+library(dplyr)
+library(ggplot2)
+library(patchwork)
+library(corrplot)
+library(readr)
+```
+
+```{r}
+train <- read_csv("Data/train_class.csv")
+test <- read_csv("Data/test_class.csv")
+```
+
+# Takeaways
+
+## Summary
+The most important takeaways are:
+- We need to deal with incomplete rows, as data on income/GDP is not available for every county
+- Like with the regression data, we need to deal with interaction effects within the data
+- May be a good idea to use log transformation on some data (e.g. `total_votes`)
+- As we can see in the graphs some of the data is skewed
+  - E.g. Biden has a disproportional amount of votes in most urban counties compared to the bars
+
+## Feature Groups
+After looking at the CSVs, I noticed that like with the regression project data, a lot of the features can be grouped together in as demographics. Each column represents the total population of each sub-demographic.For instance, there are several features that represent the total population of certain age ranges, income levels, etc. Furthermore, like with the regression project, we may need to check for interaction effects of these columns. Here are all of the columns that can be grouped together:
+
+| Columns | Demographic Category (in total pop.)|
+| ----------- | --------------- |
+| x0002E:x0003E | Represents total population of men and women respectively |
+| x0005E:x0017E | Represents age range with each column being 5 year intervals|
+| x0019E:x0024E* | Represents population above certain ages (e.g. > 18, > 21, etc.)|
+| x0025E:x0031E** | Represents population above certain ages per gender (e.g. >18 men, > 18 women, etc.)|
+|x0034E:x0057E | Racial and ethnicity demographics |
+| x0058E:x0069E | Multiracial combination demographics |
+| x0071E:x0075E | Demographics of Hispanic or Latino |
+| x0076E:x0085E | Demographics of Non-Hispanic or Latino Races|
+| x0087E:0089E | Citizens |
+| C01_001E:C01_027E | Education levels of certain age groups (e.g. Bachelor's 18-24, High school graduates 25-34, etc.) |
+| income_per_cap_2016:income_per_cap_2020 | income per capita for county in year |
+| gdp_2016:gdp_2020 | GDP for the county in year |
+
+If this data is anything like the data in the regression project, then we'll need to account for interaction effects. Also I realized all of these columns are actually lower case in the dataset but was capitalized in the `col_descriptions.csv` file, so in the actual code just de-captalize the column names.
+
+Note that some columns seem similar if not identical to other columns. for instance, `x0021E` and `x0024E`are both populations of 18 and over, however `x0021E` should be grouped within its category while `x0024E` appears to be the total of `x0026E` and `x0027E`. Perhaps these duplicates can be deleted to avoid linear dependency. Moreover, some categories may be unnecessary and all those columns can be dropped altogether. For instance, I don't see how `x0019E:x0024E` would be useful especially when we already have age data. It's possible it may be a powerful feature, but it's something worth considering in my opinion. 
+
+The education-related columsn are weird. We have age ranges of education as well as general age floors (e.g. we have the data of 25-34 year olds with bachelor's as well as how total population of those >25 with a bachelor's). Moreover, information regarding associate's and graduate/professional degrees is inconsistent. We only have that specific level of information for the population of those 25 and older, we don't know the information regarding other groups (e.g. we don't know how many 35-44 year olds specifically have an associate's, only high school or bachelor's).
+
+**Data regarding income and GDP is missing for some counties**, so this **must** be accounted for. Some ways to deal with this include but are not limited to:
+- Somehow extrapolate data for incomplete rows 
+- Drop those rows completely
+Also, it's possible these rows could have high interaction effects as well, so there's a chance we may only need one of these categories.
+
+Not every column groups are necessarily consecutively numbered. For instance, there does not exist `x0004E` or `x0032E`. Also, some columns are standalone features that can't be grouped into categories. Here are these columns:
+
+| Columns | Column Dsecription (in total pop.)|
+| id | not a predictor | 
+| winner | Biden or Trump | 
+| total_votes | total votes |
+| name of county | not a predictor or in test set |
+| x0001E | Total population |
+| x0018E | Median age (years) |
+| x0033E | Duplicate of x0001E | 
+| x0086E | Total housing units |
+| x2013_code | urban/rural code used by CDC with 1 being most urban 6 being most rural|
+
+
+## Correlation Matrix
+TODO: cells regarding income/GDP are NA because there is missing data, need to remake correlation matrix to account for this
+```{r}
+# First create correlation matrix to see which variables are highly correlated with each other
+# Because there's so many features and so many cells (127^2 to be exact), I decided to save the matrix as a CSV for readability.
+
+cor_mx <-
+  train %>%
+    select_if(is.numeric) %>%
+    cor()
+
+write.csv(cor_mx, 'cor_mx.csv')
+```
+
+
+# Graphs
+```{r distribution of election winners across counties, echo = FALSE, message = FALSE}
+ggplot(train, aes(x = winner, fill = winner)) +
+  geom_bar(color = "black", alpha = 0.7) +
+  scale_fill_manual(values = c("Trump" = "#FF4B4B", "Biden" = "#4B7BE1")) + 
+  labs(title = "Distribution of Election Winners Across Counties", 
+       x = "Winner", 
+       y = "Number of Counties") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12),
+    axis.text.x = element_text(size = 10, hjust = 1)
+  )
+
+# Caption: There is a clear imbalance in the number of counties won by each candidate as the plot shows a significant skew toward Trump, with him receiving nearly 2000 votes compared to Biden's approximately 500 votes. This suggests that Trump was more successful in a larger number of counties. 
+
+# This doesn't account for county population density, ergo this might be a useless feature.
+```
+
+```{r distribution of total votes by election winner, echo = FALSE, message = FALSE}
+plot1 <- ggplot(train, aes(x = winner, y = total_votes, fill = winner)) +
+  geom_boxplot(outlier.colour = "black", outlier.shape = 16, outlier.size = 2) +
+  scale_fill_manual(values = c("Trump" = "#FF4B4B", "Biden" = "#4B7BE1")) + 
+  labs(title = "Distribution of Total Votes by Election Winner",
+       x = "Election Winner",
+       y = "Total Votes") +
+  theme_minimal() +  
+  theme(
+    plot.title = element_text(face = "bold", size = 9, hjust = 0.5),
+    axis.title.x = element_text(size = 8),  
+    axis.title.y = element_text(size = 8),  
+    axis.text.x = element_text(size = 7),
+    axis.text.y = element_text(size = 7),  
+    legend.position = "none")
+
+y_axis_limit <- c(0, 800000)  # focus on the majority of data points
+
+plot2 <- ggplot(train, aes(x = winner, y = total_votes, fill = winner)) +
+  geom_boxplot(outlier.colour = "black", outlier.shape = 16, outlier.size = 2) +
+  scale_fill_manual(values = c("Trump" = "#FF4B4B", "Biden" = "#4B7BE1")) + 
+  labs(title = "Distribution of Total Votes by Election Winner",
+       x = "Election Winner",
+       y = "Total Votes") +
+  coord_cartesian(ylim = y_axis_limit) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 9, hjust = 0.5),
+    axis.title.x = element_text(size = 8),  
+    axis.title.y = element_text(size = 8),  
+    axis.text.x = element_text(size = 7),
+    axis.text.y = element_text(size = 7),  
+    legend.position = "none"
+  )
+
+combined_plot <- plot1 + plot2 + plot_layout(ncol = 2)
+print(combined_plot)
+
+# Caption: There is also a clear imbalance in the number of total votes for each candidate. Biden's boxplot is wider and higher, which indicates that in the counties where Biden won, the total number of votes cast was generally higher. This pattern indicates that Biden's support was likely stronger in more densely populated areas or regions with higher voter turnout, compared to the counties won by Trump. To investigate the difference in the distribution of wins vs. total votes, we want to investigate demographic or economic characteristics that are associated with the counties won by Trump or Biden. 
+```
+
+```{r total votes by urban/rural classification, echo = FALSE, message = FALSE}
+# summary of voting patterns by urban/rural classification
+summary_by_urban_rural <- train %>%
+  group_by(x2013_code, winner) %>%
+  summarize(total_votes = sum(total_votes, na.rm = TRUE),
+            count = n(),
+            .groups = 'drop')
+
+ggplot(summary_by_urban_rural, aes(x = factor(x2013_code), y = total_votes, fill = winner)) +
+  geom_bar(stat = "identity", position = "dodge", color = "black", alpha = 0.7) +
+  labs(title = "Total Votes by Urban/Rural Classification and Election Winner",
+       x = "Urban/Rural Classification (1 = Most Urban, 6 = Most Rural)",
+       y = "Total Votes",
+       fill = "winner") +
+  scale_fill_manual(values = c("Trump" = "#FF4B4B", "Biden" = "#4B7BE1")) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12),
+    axis.text.x = element_text(size = 10, hjust = 1)
+  )
+
+# This bar plot helps us compare the total votes cast for each candidate in different urban/rural categories. This visual, especially at the extremes of 1 = Most Urban and 6 = Most Rural, highlights and supports the fact that more urban areas have higher votes for Biden, whereas more rural areas have higher votes for Trump. 
+```
+
