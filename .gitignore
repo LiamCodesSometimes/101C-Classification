@@ -53,6 +53,3 @@ rsconnect/
 .gitignore~
 .mp4
 .DS_Store
-
-# Ignore data
-Data/
