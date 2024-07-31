@@ -7,8 +7,8 @@ date: "2024-07-31"
 
 # Set-Up
 If you donwant to knit the PDF but don't want to run the code chunks, set eval = FALSE.
-```{r setup, include=FALSE, eval = TRUE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 
 set.seed(161)
 ```
@@ -105,15 +105,83 @@ knn_basic_recipe <- recipe(winner ~ ., data = train) %>%
 
 ## Create Workflow
 ```{r}
+# Basic recipe workflow
 knn_basic_wkfl <- workflow() %>%
   add_recipe(knn_basic_recipe) %>%
   add_model(knn_model)
 ```
 
+# Tuning
+
+## Create general tuning model
+```{r}
+# Set up tuning model
+
+# Should we tune other parameters for nearest_neighbor()?
+tune_model <- nearest_neighbor(neighbors = tune()) %>%
+  set_engine("kknn") %>%
+  set_mode("classification")
+
+# Create control grids
+con_grid <- control_grid(save_pred = TRUE, save_workflow = TRUE, verbose = TRUE)
+```
+
+## Create tuning workflow for basic recipe
+```{R}
+tune_basic_wkfl <- workflow() %>%
+  add_recipe(knn_basic_recipe) %>%
+  add_model(tune_model)
+```
+
+TODO: Create and add control grid with parameters needed for the stack
+## Tune the basic model
+```{r}
+# Tune the basic model with resampled data (this will take a couple of minutes)
+tune_basic_rs <- tune_grid(tune_basic_wkfl,
+                      resamples = winner_folds,
+                      control = con_grid,
+                      grid = 20)
+
+```
+
+## Acquire optimal k-value
+
+### Basic knn model
+It appears $n=13$ is the optimal value for accuracy.
+```{r}
+tune_basic_results <- tune_basic_rs %>%
+  collect_metrics() %>%
+  filter(.metric == "accuracy") %>%
+  arrange(desc(mean))  # Choose highest accuracy
+
+print(tune_basic_results)
+
+basic_best_k <- select_best(tune_basic_rs, metric = "accuracy")
+```
+## Finalize Model
+
+### Basic knn
+```{r}
+final_basic <- finalize_model(tune_model, basic_best_k)
+
+# Create final  Workflow
+final_basic_wkfl <- workflow() %>%
+  add_recipe(knn_basic_recipe) %>%
+  add_model(final_basic)
+```
+
+
 # Fitting Data
+Each fit will take a minute or two.
 ## Fitting the basic wokrflow to resamples
 ```{r}
 knn_basic_rs <- knn_basic_wkfl %>%
+  fit_resamples(resamples = winner_folds, metrics = winner_metrics)
+```
+
+## Fitting the tuned basic workflow to resamples
+```{r}
+knn_basic_tuned_rs <- final_basic_wkfl %>%
   fit_resamples(resamples = winner_folds, metrics = winner_metrics)
 ```
 
@@ -122,22 +190,46 @@ knn_basic_rs <- knn_basic_wkfl %>%
 ## Collect Metrics
 ```{r}
 # Metrics of basic resamples
-knn_basic_rs %>% 
-  collect_metrics()
+#knn_basic_rs %>% 
+#  collect_metrics()
+
+# Metrics of tuned basic model
+knn_basic_tuned_rs %>%
+  collect_metrics
 ```
 
 ## Fit the basic workflow to all of training data
-```{r}
+```{r, eval = FALSE}
 knn_basic_fit <- knn_basic_wkfl %>%
   fit(train)
 
 print(knn_basic_fit)
 ```
 
+Do the same but with the tuned workflow
+```{r, eval = FALSE}
+knn_basic_tuned_fit <- final_basic_wkfl %>%
+  fit(train)
+
+print(knn_basic_tuned_fit)
+```
+
 ## Get Predictions
 
 ## Basic knn
-```{r}
+```{r, eval = FALSE}
+basic_predictions <- predict(knn_basic_tuned_fit, new_data = test)
+
+# Create new testing data that drops the same features training did
+basic_results <- test %>%
+  select(id) %>%
+  bind_cols(basic_predictions)
+
+write_csv(basic_results, 'basic_knn_tuned_predictions.csv')
+```
+
+Create predictions with tuned parameters
+```{r, eval = FALSE}
 basic_predictions <- predict(knn_basic_fit, new_data = test)
 
 # Create new testing data that drops the same features training did
@@ -149,8 +241,13 @@ write_csv(basic_results, 'basic_knn_predictions.csv')
 ```
 # Potential Improvements
 
-For starters, we can tune $k$ as well as increase the number of $v$ folds. Furthermore, there are more ways we can deal with interaction effects between age categories (for instance ages per gender amy interact with general age columns).
+- For starters, we can tune $k$ as well as increase the number of $v$ folds. 
+  - While I did tune the number of neighbors, there appears to be other parameters we can tune, type `?nearest_neighbor()` in the terminal to see more. 
 
-There are probably several other features that should be dropped, especially ones that are essentially duplicates of other features. Lastly, we can probably log transform several other features or maybe even encode other ones.
+- There are more ways we can deal with interaction effects between age categories (for instance ages per gender amy interact with general age columns).
 
-Finally, there could be better ways of dealing with incomplete data than imputing mean. We may be better off dropping those rows altogether.
+- There are probably several other features that should be dropped, especially ones that are essentially duplicates of other features. Lastly, we can probably log transform several other features or maybe even encode other ones.
+
+- Finally, there could be better ways of dealing with incomplete data than imputing mean. We may be better off dropping those rows altogether.
+
+- It also might help to create a confusion matrix especially for comparing model performances.
