@@ -13,6 +13,7 @@
 - [Simple and short tutorial](https://www.youtube.com/watch?v=wrb7Gge9yoE)
 - [More rigorous tutorial](https://www.youtube.com/watch?v=pDmYNK68IEc)
 - [How to make PATs(personal access tokens)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+- [Pushing branches](https://github.com/Kunena/Kunena-Forum/wiki/Create-a-new-branch-with-git-and-manage-branches)
 
 ## DataLab Notebooks
 - [Regression Modeling](https://www.datacamp.com/datalab/w/c8059416-482b-4330-9653-2c58fcf672a9/edit)
@@ -27,10 +28,10 @@
 - [ ] Create team name
 
 ## Liam
-- [ ] Make xgboost model 
+- [X] Make xgboost model 
 
 ## Eric
-- [ ] Make k-nn model
+- [X] Make k-nn model
 
 ## Van-An
 - [ ]
@@ -39,4 +40,4 @@
 - [ ]
 
 ## Pavan
-- [ ] Join kaggle
+- [X] Join kaggle
