@@ -113,12 +113,21 @@ knn_basic_wkfl <- workflow() %>%
 
 # Tuning
 
+I believe `weight_func()`takes more time to tune in particular as the calculations can be quite complex. It essentially finds the best function to calculate weight distances, and these functions include trig functions, gaussian, inv, etc.
+
+`dist_power()` may also be taking an inordinate amount of time, especially the parameters' ranges aren't specified.
+
 ## Create general tuning model
 ```{r}
 # Set up tuning model
 
 # Should we tune other parameters for nearest_neighbor()?
-tune_model <- nearest_neighbor(neighbors = tune()) %>%
+tune_model_simple <- nearest_neighbor(neighbors = tune()) %>%
+  set_engine("kknn") %>%
+  set_mode("classification")
+
+# tunes all parameters of the model, unsurprisingly it'll take a bit longer if you tune with this model instead
+tune_model <- nearest_neighbor(neighbors = tune(), weight_func = tune(), dist_power = tune()) %>%
   set_engine("kknn") %>%
   set_mode("classification")
 
@@ -134,9 +143,12 @@ tune_basic_wkfl <- workflow() %>%
 ```
 
 TODO: Create and add control grid with parameters needed for the stack
+TODO: Enable parallelism to speed up this process
+
+This will take a couple of minutes or over 10 minutes depending on which tuning model you used.
 ## Tune the basic model
 ```{r}
-# Tune the basic model with resampled data (this will take a couple of minutes)
+# Tune the basic model with resampled data (this will take a while)
 tune_basic_rs <- tune_grid(tune_basic_wkfl,
                       resamples = winner_folds,
                       control = con_grid,
@@ -144,7 +156,7 @@ tune_basic_rs <- tune_grid(tune_basic_wkfl,
 
 ```
 
-## Acquire optimal k-value
+## Acquire optimal parameters
 
 ### Basic knn model
 It appears $n=13$ is the optimal value for accuracy.
@@ -173,13 +185,15 @@ final_basic_wkfl <- workflow() %>%
 
 # Fitting Data
 Each fit will take a minute or two.
-## Fitting the basic wokrflow to resamples
+
+## Basic recipe
+### Fitting the basic wokrflow to resamples
 ```{r}
 knn_basic_rs <- knn_basic_wkfl %>%
   fit_resamples(resamples = winner_folds, metrics = winner_metrics)
 ```
 
-## Fitting the tuned basic workflow to resamples
+### Fitting the tuned basic workflow to resamples
 ```{r}
 knn_basic_tuned_rs <- final_basic_wkfl %>%
   fit_resamples(resamples = winner_folds, metrics = winner_metrics)
@@ -217,6 +231,19 @@ print(knn_basic_tuned_fit)
 ## Get Predictions
 
 ## Basic knn
+
+```{r, eval = FALSE}
+basic_predictions <- predict(knn_basic_fit, new_data = test)
+
+# Create new testing data that drops the same features training did
+basic_results <- test %>%
+  select(id) %>%
+  bind_cols(basic_predictions)
+
+write_csv(basic_results, 'basic_knn_predictions.csv')
+```
+
+Create predictions with tuned parameters
 ```{r, eval = FALSE}
 basic_predictions <- predict(knn_basic_tuned_fit, new_data = test)
 
@@ -228,21 +255,11 @@ basic_results <- test %>%
 write_csv(basic_results, 'basic_knn_tuned_predictions.csv')
 ```
 
-Create predictions with tuned parameters
-```{r, eval = FALSE}
-basic_predictions <- predict(knn_basic_fit, new_data = test)
-
-# Create new testing data that drops the same features training did
-basic_results <- test %>%
-  select(id) %>%
-  bind_cols(basic_predictions)
-
-write_csv(basic_results, 'basic_knn_predictions.csv')
-```
 # Potential Improvements
 
 - For starters, we can tune $k$ as well as increase the number of $v$ folds. 
-  - While I did tune the number of neighbors, there appears to be other parameters we can tune, type `?nearest_neighbor()` in the terminal to see more. 
+  - While I did tune the number of neighbors, there appears to be other parameters we can tune, type `?nearest_neighbor()` in the console to see more. 
+  - Tuning all the parameters didn't really yield to improvements in accuracy, performed greatly in `spec` though.
 
 - There are more ways we can deal with interaction effects between age categories (for instance ages per gender amy interact with general age columns).
 
