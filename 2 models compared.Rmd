@@ -1,0 +1,78 @@
+---
+title: "Test123"
+author: "Liam Martin-McClay"
+date: "2024-07-31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+
+train <- read_csv("C:\\Coding_Stuff\\train.csv")
+test <- read_csv("C:\\Coding_Stuff\\test.csv")
+train <- train %>%
+  mutate_if(is.character, factor)
+train <- train[,-4]
+test <- test %>%
+  mutate_if(is.character, factor)
+set.seed(101)
+```
+
+Model 1 - Results from size 10 model
+```{r}
+xgb_spec_1 <- boost_tree(trees = 1000,
+           tree_depth = 10, min_n = 3, 
+           loss_reduction = 0.00000199358184098715, sample_size = 0.536094986887183, 
+           mtry = 84,learn_rate = 0.00544393724519526
+) %>% 
+  set_engine("xgboost") %>%
+  set_mode("classification")
+```
+
+```{r}
+xgb_wf_1 <- workflow() %>%
+  add_formula(winner~.) %>%
+  add_model(xgb_spec_1)
+```
+
+```{r}
+train_1 <- xgb_wf_1 %>%
+  fit(data = train)
+pred_1 <- train_1 %>%
+  predict(new_data = test)
+pred_table <- bind_cols(test %>% select(id), pred_1)
+write_csv(pred_table, "xgb_predictions_tuned3.csv")
+```
+
+MODEL 2- Results from size 50 model
+
+```{r}
+set.seed(101)
+xgb_spec_2 <- boost_tree(trees = 1000,
+           tree_depth = 8, min_n = 12, 
+           loss_reduction = 0.00000000182083427988767, sample_size = 0.762440288938582, 
+           mtry = 46,learn_rate = 0.0515454591681938
+) %>% 
+  set_engine("xgboost") %>%
+  set_mode("classification")
+```
+
+```{r}
+xgb_wf_2 <- workflow() %>%
+  add_formula(winner~.) %>%
+  add_model(xgb_spec_2)
+```
+
+```{r}
+train_2 <- xgb_wf_2 %>%
+  fit(data = train)
+pred_2 <- train_2 %>%
+  predict(new_data = test)
+pred_table <- bind_cols(test %>% select(id), pred_2)
+write_csv(pred_table, "xgb_predictions_tuned4.csv")
+```
