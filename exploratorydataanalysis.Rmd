@@ -24,7 +24,7 @@ test <- read_csv("Data/test_class.csv")
 
 # CSV Analysis
 
-## Summary
+## Synposis
 The most important takeaways are:
 
 - We need to deal with incomplete rows, as data on income/GDP is not available for every county
@@ -32,6 +32,23 @@ The most important takeaways are:
 - May be a good idea to use log transformation on some data (e.g. `total_votes`)
 - As we can see in the graphs, some of the data is skewed
   - E.g. Biden has a disproportional amount of votes in most urban counties compared to the bars
+- It's worth considering dropping some columns, such as name, id (?), duplicates, etc.
+  
+## Distribution
+TODO: Create a summary of total_votes per winner (e.g. what was the mean votes Trump got in a county vs mean votes Biden got in a county)
+```{r, eval = TRUE}
+train %>%
+    summarize(min_total_votes = min(total_votes),
+              max_total_votes = max(total_votes),
+              mean_total_votes = mean(total_votes),
+              sd_total_votes = sd(total_votes))
+
+test %>%
+    summarize(min_total_votes = min(total_votes),
+              max_total_votes = max(total_votes),
+              mean_total_votes = mean(total_votes),
+              sd_total_votes = sd(total_votes))
+```
 
 ## Feature Groups
 After looking at the CSVs, I noticed that like with the regression project data, a lot of the features can be grouped together in as demographics. Each column represents the total population of each sub-demographic.For instance, there are several features that represent the total population of certain age ranges, income levels, etc. Furthermore, like with the regression project, we may need to check for interaction effects of these columns. Here are all of the columns that can be grouped together:
@@ -41,7 +58,7 @@ After looking at the CSVs, I noticed that like with the regression project data,
 | x0002E:x0003E | Represents total population of men and women respectively |
 | x0005E:x0017E | Represents age range with each column being 5 year intervals|
 | x0019E:x0024E* | Represents population above certain ages (e.g. $>18$, $>21$, etc.)|
-| x0025E:x0031E** | Represents population above certin ages per gender (e.g. $>18$ men, > $18$ women, etc.)|
+| x0025E:x0031E** | Represents population above certain ages per gender (e.g. $>18$ men, > $18$ women, etc.)|
 |x0034E:x0057E | Racial and ethnicity demographics |
 | x0058E:x0069E | Multiracial combination demographics |
 | x0071E:x0075E | Demographics of Hispanic or Latino |
