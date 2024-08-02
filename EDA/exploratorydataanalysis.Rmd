@@ -18,8 +18,8 @@ library(tidymodels)
 ```
 
 ```{r}
-train <- read_csv("Data/train_class.csv")
-test <- read_csv("Data/test_class.csv")
+train <- read_csv("../Data/train_class.csv")
+test <- read_csv("../Data/test_class.csv")
 ```
 
 # CSV Analysis
