@@ -6,7 +6,7 @@ date: "2024-07-31"
 ---
 
 # Set-Up
-If you donwant to knit the PDF but don't want to run the code chunks, set eval = FALSE.
+If you want to knit the PDF but don't want to run the code chunks, set eval = FALSE.
 ```{r setup, include=TRUE}
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 
