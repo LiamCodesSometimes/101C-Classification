@@ -460,13 +460,7 @@ ggplot(model_performance, aes(x = Model, y = Accuracy_metric, fill = Model)) +
 
 # Discussion of Final Model 
 
-The final model was created while following a tutorial from one of Rstudio's finest, [Julia Silge](https://www.youtube.com/watch?v=hpudxAmxHSM). We choose an xgboost model because it is a very common way to extract predictions from tabular data.  
-
-```{r}
-knitr::include_graphics("tuning_plot_class.png")
-```
-
-
+The final model was created while following a tutorial from one of Rstudio's finest, [Julia Silge](https://www.youtube.com/watch?v=hpudxAmxHSM). We choose an xgboost model because it is a very common way to extract predictions from tabular data. Our first attempt at this model turned out to be our best, so there weren't many iterations made, despite our best attempts.
 
 **Model 5** was chosen as the final model due to the fact that it had the best performance in terms of accuracy. 
 
@@ -505,6 +499,10 @@ I think the main weakness of this model is that it was not part of an ensemble m
 
 ## Additional Data
 
+
+```{r}
+knitr::include_graphics("tuning_plot_class.png")
+```
 
 Potential useful additional data includes, but is not limited to:
 - More granular information regarding education and age groups 
