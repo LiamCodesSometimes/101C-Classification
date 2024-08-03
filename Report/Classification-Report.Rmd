@@ -16,7 +16,7 @@ set.seed(161)
 ```
 
 ## Import Libraries and Data
-```{r, eval = TRUE}
+```{r, message = FALSE, echo = TRUE, eval = TRUE}
 library(tidyverse)
 library(tidymodels)
 library(ggplot2)
