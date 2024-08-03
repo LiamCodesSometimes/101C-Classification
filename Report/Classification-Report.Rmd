@@ -1,10 +1,10 @@
 ---
 title: "Classification Report"
 author: "Eric Chu, Van-An Lam, Ava Adlao, William Martin-McClay, Pavan Sah"
-output:
+output: 
   pdf_document: default
-  html_document:
-    df_print: paged
+urlcolor: blue
+linkcolor: red
 ---
 
 # Set-Up
@@ -472,8 +472,8 @@ We didn't opt to do any preprocessing, instead spending our time on tuning almos
 
 
 
-```{r, out.width="7.5 in", out.height= "5.714 in", echo = FALSE}
-knitr::include_graphics("tuned_values.png")
+```{r, out.width="8 in", out.height= "5.714 in", echo = FALSE}
+knitr::include_graphics("tuning_plot_class.png")
 ```
 \begin{figure}[h!]
 \centering
@@ -482,9 +482,8 @@ knitr::include_graphics("tuned_values.png")
 
 ## Strengths and Weaknesses of the Final Model 
 
-
-
 There are several ways to improve the model. Namely, creating a better and more elaborate recipe could improve the model. We can add more `step_*()` pre-processing functions to improve the model. There are some things that aren't taken into account, including:
+
   - duplicate columns
   - columns that are almost duplicates and could cause huge interaction effects/multicollinearity
   - the fact that the `total_votes` feature is skewed and could be log transformed
@@ -499,12 +498,8 @@ I think the main weakness of this model is that it was not part of an ensemble m
 
 ## Additional Data
 
-
-```{r}
-knitr::include_graphics("tuning_plot_class.png")
-```
-
 Potential useful additional data includes, but is not limited to:
+
 - More granular information regarding education and age groups 
   - (e.g. how many people over the age of 65 have master's or have not finished high school)
 - complete data regarding income per capita and GDP
