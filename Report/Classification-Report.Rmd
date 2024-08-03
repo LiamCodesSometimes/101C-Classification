@@ -298,7 +298,7 @@ Preprocessing and recipes were not used for the final model. While there was a m
 | Model 4   |          KNN tuned      | kknn  | Eric | $neighbors = 13$ |
 | Model 5   | xgboost | xgboost | Liam | mtry = 90, trees = 1000, min_n = 7, tree_depth = 2, learn_rate = 0.04185, loss_reduction = $5.8758*10e^{-08}$, sample_size = 0.7967 |
 | Model 6   | xgboost with recipe| xgboost  | Eric | mtry = 20, trees = 1000, min_n = 3, tree_depth = 6, learn_rate = $4.1084*10e^{-10}$, loss_reduction =  $2.2940*10e^{-6}$, sample_size = 0.3345 |
-| Model 7   |    Random Forest |   | Pavan | N/A |
+| Model 7   |    Random Forest | ranger  | Pavan | N/A |
 
 \begin{center} 
 \textbf{Table 2.} Description of Candidate Models
@@ -604,9 +604,9 @@ write_csv(pred_table_2, "xgb_predictions_tuned.csv")
 
 # Appendix: Team Member Contributions 
 
-- Eric: Created tables in report, added some insight in discussions, created KNN models, created a recipe for **Model 5**, documented findings on EDA of column types
+- Eric: Created tables in report, added some insight in discussions, created KNN models **Model 3** and **Model 2** and **4**, created a recipe for **Model 5** and used that to create **Model 6**, documented findings on EDA of column types
 - Van-An: Creation of **Model 1** and other (logistic regression + linear discriminant analysis (LDA)) models that were not selected to be candidate models
-- Ava:  Creation of some exploratory data analysis visuals, creation of a candidate model, compiled information for the report, created tables in report
+- Ava:  Creation of some exploratory data analysis visuals, creation of a candidate model, compiled information for the report, created tables in report, created **Model 2**
 - Liam: Created **Model 5**, attempted stack, wrote about **Model 5** on report
-- Pavan: Half of exploratory data analysis, created random forest model
+- Pavan: Half of exploratory data analysis, created the random forest **Model 7**
 
