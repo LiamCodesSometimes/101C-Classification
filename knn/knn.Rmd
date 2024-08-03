@@ -139,7 +139,7 @@ con_grid <- control_grid(save_pred = TRUE, save_workflow = TRUE, verbose = TRUE)
 ```{R}
 tune_basic_wkfl <- workflow() %>%
   add_recipe(knn_basic_recipe) %>%
-  add_model(tune_model)
+  add_model(tune_model_simple)
 ```
 
 TODO: Create and add control grid with parameters needed for the stack

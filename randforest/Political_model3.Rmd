@@ -1,0 +1,131 @@
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+```
+
+```{r}
+train <- read_csv('../Data/train_class.csv')
+test <- read_csv('../Data/test_class.csv')
+```
+
+
+```{r}
+
+train <- train %>%
+  mutate(across('x2013_code', as.factor)) %>%
+  select(-'name')
+
+test <- test %>%
+  mutate(across('x2013_code', as.factor))
+
+
+```
+
+## Validate Data Using Cross-Folds
+```{r}
+winner_folds <- vfold_cv(train, v = 10,
+                       strata = 'winner')
+```
+
+# Recipe & Workflow
+
+## Set Engines
+```{r}
+rf_model <- rand_forest(trees = 1000) %>%
+  set_engine("ranger") %>%
+  set_mode("classification") 
+```
+
+# Got rid of under 18 x0005E,Estimate:Total population:Under 5 years and x0006E, x0019E ,Estimate:Total population:Under 18 years. 
+
+```{r}
+
+rf_recipe <- 
+  recipe(winner ~ ., data = train) %>%
+  step_dummy('x2013_code') %>%
+  step_rm('x0005e', 'x0006e', 'x0019e') %>%
+  step_impute_median(income_per_cap_2016, income_per_cap_2017, income_per_cap_2018, 
+                    income_per_cap_2019, income_per_cap_2020, gdp_2016, 
+                    gdp_2017, gdp_2018, gdp_2019, gdp_2020)
+```
+
+
+```{r}
+rf_wflow <- 
+  workflow() %>%
+  add_recipe(rf_recipe) %>%
+  add_model(rf_model)
+```
+
+
+
+```{r}
+set.seed(123)
+rf_res <-
+  rf_wflow %>%
+  fit_resamples(resamples = winner_folds)
+```
+
+
+```{r}
+collect_metrics(rf_res)
+```
+
+
+
+```{r}
+rf_workflow_fit <- rf_wflow%>% 
+  fit(data = train)
+```
+
+
+
+```{r}
+
+politcal_predictions <- predict(rf_workflow_fit, new_data = test)
+
+```
+
+
+
+```{r}
+politcal_predictions<- bind_cols(politcal_predictions ,test %>% select(id))
+
+```
+
+
+
+```{r}
+relocated_politcal_predictions <-  politcal_predictions %>%
+                          relocate(id, .before = .pred_class)
+
+```
+
+
+
+```{r}
+rename_political_predictions <- relocated_politcal_predictions %>%
+rename(winner = .pred_class )
+
+```
+
+
+
+
+```{r}
+write_csv(rename_political_predictions , file = "rand_forest_predictions.csv")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+

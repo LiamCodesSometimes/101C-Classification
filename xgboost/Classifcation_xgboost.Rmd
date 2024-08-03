@@ -9,7 +9,7 @@ output: pdf_document
 
 If you want to knit the PDF but don't want to run the code chunks, set eval = FALSE.
 ```{r setup, include=TRUE}
-knitr::opts_chunk$set(echo = TRUE, eval = TRUE)
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 ```
 
 ```{r}
@@ -25,11 +25,11 @@ test <- read_csv("../Data/test_class.csv")
 
 train <- train %>%
   select(-'name') %>%
-  mutate(across('x2013_code', as.factor)) %>%
+#  mutate(across('x2013_code', as.factor)) %>%
   mutate_if(is.character, factor)
 
 test <- test %>%
-  mutate(across('x2013_code', as.factor)) %>%
+#  mutate(across('x2013_code', as.factor)) %>%
   mutate_if(is.character, factor)
 ```
 
@@ -99,7 +99,7 @@ vb_folds <- vfold_cv(train, strata = winner)
 set.seed(202)
 
 xgb_res <- tune_grid(
-  xgb_recipe_wf, # Change this line to desired workflow
+  xgb_wf, # Change this line to desired workflow
   resamples = vb_folds,
   grid = xgb_grid,
   control = control_grid(save_pred = TRUE, verbose = TRUE)
