@@ -41,6 +41,12 @@ We believe a county's type (i.e. urban or rural) is its most substantial predict
 
 # Final Model
 
+I'm assuming we're gonna use Liam's model. Here's my comments (based on the most recent version uploaded on GitHub)
+- We can add more `step_*()` pre-processing functions to improve the model. There are some things that aren't taken into account (I believe), including:
+  - duplicate columns
+  - columns that are almost duplicates and could cause huge interaction effects/multicollinearity
+  - the fact that the `total_votes` feature is skewed and could be log transformed
+
 # Appendix
 
 ## Final Model Script
