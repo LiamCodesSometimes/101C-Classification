@@ -276,9 +276,10 @@ The plot reveals an unexpected balance in voting preferences among American Indi
 \newpage
 
 # Preprocessing/Recipes 
-**TODO:** Finish this (i.e. explain why recipes were not used)
 
-Preprocessing and recipes were not used for the final model. While there was a model that attempted to use a recipe, it somehow performed worse than the unadjusted model.
+Minimal preprocessing was done on our best model. The only preprocessing step was to correctly identify the categorical variables. Little preprocessing was done because in the context of boosted trees, hyperparamter tuning is  more importance than preprocessing. When the final model was created, this was a decision made to save time, but when we revisited the model after hyperparamter tuning we attempted to use some preprocessing to improve the score, but it turned out to have lower performance.
+
+
 
 \newpage
 
@@ -459,13 +460,23 @@ ggplot(model_performance, aes(x = Model, y = Accuracy_metric, fill = Model)) +
 
 # Discussion of Final Model 
 
-**TODO:**  Finish this
+The final model was created while following a tutorial from one of Rstudio's finest, [Julia Silge](https://www.youtube.com/watch?v=hpudxAmxHSM). We choose an xgboost model because it is a very common way to extract predictions from tabular data.  
 
-**Model 5** was chosen as the final model due to the fact that it had the best performance in terms of accuracy. Despite the fact that it literally does not contain any pre-processing steps, it still performed the best among all the candidate models. 
+```{r}
+knitr::include_graphics("tuning_plot_class.png")
+```
+
+
+
+**Model 5** was chosen as the final model due to the fact that it had the best performance in terms of accuracy. 
+
+Despite the fact that it  does not contain any pre-processing steps, it still performed the best among all the candidate models. 
 
 ## Hypertuning Process
 
-**TODO:** Write details explaining process
+We didn't opt to do any preprocessing, instead spending our time on tuning almost every hyperparameter:tree_depth, min_n, loss_reduction, sample_size, mtry, and learn_rate. This provided a learning experience over our model for the regression project. In the regression project, we used tune_grid() to tune our models, but learned that when tuning more than two parameters, it took a very long time. Facing six parameters meant we needed a new approach. This is why we chose to use grid_latin_hypercube(). This allowed the tuning process to take under 20 minutes with size = 10. This process led to following graph, and it ended up being our best model. After seeing the success of the first iteration of the model, we retried it with size = 50, hoping to find an even better combination of parameters. However, the combinations that were found performed worse.
+
+
 
 ```{r, out.width="7.5 in", out.height= "5.714 in", echo = FALSE}
 knitr::include_graphics("tuned_values.png")
@@ -477,11 +488,7 @@ knitr::include_graphics("tuned_values.png")
 
 ## Strengths and Weaknesses of the Final Model 
 
-**TODO:**
 
-## Possible Improvements 
-
-**TODO:** Add whatever you think would be interesting
 
 There are several ways to improve the model. Namely, creating a better and more elaborate recipe could improve the model. We can add more `step_*()` pre-processing functions to improve the model. There are some things that aren't taken into account, including:
   - duplicate columns
@@ -491,14 +498,13 @@ There are several ways to improve the model. Namely, creating a better and more 
   - Encoding a feature (e.g. `x2013_code`)
   - Avoid using non-predictor columns as predictors (e.g. `id`)
   
-While these issues were attempted to be resolved in **Model 6**, this somehow resulted in a slightly less accurate model. These attempts could further be improved in future recipes.
+While these issues were attempted to be resolved in **Model 6**, this somehow resulted in a slightly less accurate model. These attempts could further be improved in future recipes. This isn't completely unexpected from a boosted_trees model; it suggests that maybe we should only return to preprocessing for this model when other, bigger improvements or changes have been made. 
 
-**TODO:** Elaborate on this and talk about your attempt in making the stack
-Also, we could attempt to use the stack. 
+I think the main weakness of this model is that it was not part of an ensemble model. This xgboost model was well tuned for the conditions, and further testing showed that more preprocessing steps, or more (size) testing didn't seem to improve it. In this sense, I think the xgboost model was almost as good as it could have been. However, we think we would have seen better predictive performance using an ensemble model. While one of our group members, Liam, attempted to get an ensemble model going, he did not finish before the competition deadline. Many of our group members were busy with other classes and responsibilities, and this competition served as a reminder that a good model takes a lot of time to make. We believe this was our biggest barrier to a better model.
 
 
 ## Additional Data
-**TODO:** Add whatever you think would be useful
+
 
 Potential useful additional data includes, but is not limited to:
 - More granular information regarding education and age groups 
