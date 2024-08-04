@@ -299,7 +299,7 @@ Minimal preprocessing was done on our best model. The only preprocessing step wa
 | Model 4   |          KNN tuned      | kknn  | Eric | $neighbors = 13$ |
 | Model 5   | xgboost | xgboost | Liam | mtry = 90, trees = 1000, min_n = 7, tree_depth = 2, learn_rate = 0.04185, loss_reduction = $5.8758*10e^{-08}$, sample_size = 0.7967 |
 | Model 6   | xgboost with recipe| xgboost  | Eric | mtry = 20, trees = 1000, min_n = 3, tree_depth = 6, learn_rate = $4.1084*10e^{-10}$, loss_reduction =  $2.2940*10e^{-6}$, sample_size = 0.3345 |
-| Model 7   |    Random Forest | ranger  | Pavan | mtry = 98, trees = 50, min_n = 1 |
+| Model 7   |    Random Forest | ranger  | Pavan | mtry = 77, trees = 92, min_n = 6 |
 
 \begin{center} 
 \textbf{Table 2.} Description of Candidate Models
@@ -385,8 +385,8 @@ Minimal preprocessing was done on our best model. The only preprocessing step wa
 
 |**Metric**| Model 1 |Model 2| Model 3 | Model 4 | Model 5| Model 6 | Model 7|
 |------------|--------|---------|---------|---------|--------|--------|---------|
-|**Accuracy**| 0.933 | 0.85355 |  0.9960 | 0.89539| 0.94560 | 0.94142 | 0.91205 |
-|**Std. Error**|  0.0044 |0.0058 | 0.0044  |0.005247| 0.0052123 | 0.0065 | 0.003404|
+|**Accuracy**| 0.933 | 0.85355 |  0.9960 | 0.89539| 0.94560 | 0.94142 | 0.91245 |
+|**Std. Error**|  0.0044 |0.0058 | 0.0044  |0.005247| 0.0052123 | 0.0065 | 0.00367|
 
 ## Visualizing Performance of Candidate Models 
 
@@ -395,7 +395,7 @@ Minimal preprocessing was done on our best model. The only preprocessing step wa
 # data frame with model names and Accuracy scores
 model_performance <- data.frame(
   Model = c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5", "Model 6", "Model 7"),
-  Accuracy_metric = c(0.933, 0.85355, 0.9960, 0.89539, 0.9456, 0.94142, 0.91205)
+  Accuracy_metric = c(0.933, 0.85355, 0.9960, 0.89539, 0.9456, 0.94142, 0.91245)
 )
 
 # bar plot of Accuracy scores
@@ -429,7 +429,7 @@ This metric measures the proportion of correctly classified instances among the 
 
 model_performance <- data.frame(
   Model = c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5", "Model 6", "Model 7"),
-  Accuracy_metric = c(0.0044, 0.0058, 0.0044, 0.005247, 0.005212, 0.0065, 0.003404)
+  Accuracy_metric = c(0.0044, 0.0058, 0.0044, 0.005247, 0.005212, 0.0065, 0.00367)
 )
 
 # bar plot of std error of Accuracy scores
