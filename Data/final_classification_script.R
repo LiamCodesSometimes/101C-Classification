@@ -3,8 +3,8 @@ library(tidymodels)
 library(xgboost)
 library(vip)
 
-train <- read_csv("../Data/train_class.csv")
-test <- read_csv("../Data/test_class.csv")
+train <- read_csv("train_class.csv")
+test <- read_csv("test_class.csv")
 
 train <- train %>%
   select(-'name') %>%
